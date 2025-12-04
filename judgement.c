@@ -14,7 +14,7 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
     for(int i = 0; i < size; i++){
         hand[i] = o_hand[i];
     }
-    for(int i = 0; i < size; i++){
+    for(int i = 1; i < size; i++){
         for(int j = 0; j < size-i; j++){
             if(hand[j].rank < hand[j+1].rank){
                 temp = hand[j];

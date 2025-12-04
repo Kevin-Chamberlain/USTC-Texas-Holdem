@@ -1,6 +1,6 @@
 #ifndef POKER_CARD_H
 #define POKER_CARD_H
-
+#define CONSIDER_SIZE 7
 typedef enum {
     STRAIGHT_FLUSH = 8,
     FOUR_OF_A_KIND = 7,
@@ -26,9 +26,8 @@ typedef struct {
 } Card;
 
 typedef struct {
-    Card community[5];
-    Card pocket1[2];
-    Card pocket2[2];
+    Card player1[CONSIDER_SIZE];
+    Card player2[CONSIDER_SIZE];
     int pot;
     int result;
     int weight1;
@@ -45,4 +44,8 @@ typedef struct {
 **比较级数不多时，可只用到后几位表示
 */
 
+static Suit char_to_suit(char c);
+static int char_to_rank(char c);
+static char *handtype_to_string(HandType ht);
+RoundInfo read_round_info(const char *line);
 #endif //POKER_CARD_H

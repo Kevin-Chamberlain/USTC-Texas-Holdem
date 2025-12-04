@@ -8,7 +8,9 @@ static Suit char_to_suit(char c) {
         case 'D': return D;
         case 'H': return H;
         case 'S': return S;
-        default:  perror("Invalid suit character");
+        default:
+            fprintf(stderr, "Invalid suit character: '%c'\n", c);
+            exit(1);  // return C
     }
 }
 static int char_to_rank(char c) {
@@ -19,7 +21,9 @@ static int char_to_rank(char c) {
         case 'Q': return 12;
         case 'K': return 13;
         case 'A': return 14;
-        default:  perror("Invalid rank character");
+        default:
+            fprintf(stderr, "Invalid rank character: '%c'\n", c);
+            exit(1);  // return 0
     }
 }
 static char* handtype_to_string(HandType ht) {
@@ -47,11 +51,12 @@ RoundInfo read_round_info(const char* line){
         &info.result
     );
     for (int i = 0; i < 5; i++) {
-        info.community[i] = (Card){ .suit = char_to_suit(cc[i][1]) , .rank = char_to_rank(cc[i][0]) };
+        info.player2[i] = info.player1[i] = 
+        (Card){ .suit = char_to_suit(cc[i][1]) , .rank = char_to_rank(cc[i][0]) };
     }
-    for (int i = 0; i < 2; i++) {
-        info.pocket1[i] = (Card){ .suit = char_to_suit(cc[i+5][1]) , .rank = char_to_rank(cc[i+5][1]) };
-        info.pocket2[i] = (Card){ .suit = char_to_suit(cc[i+7][1]) , .rank = char_to_rank(cc[i+7][1]) };
+    for (int i = 5; i < 7; i++) {
+        info.player1[i] = (Card){ .suit = char_to_suit(cc[i][1]) , .rank = char_to_rank(cc[i][0]) };
+        info.player2[i] = (Card){ .suit = char_to_suit(cc[i+2][1]) , .rank = char_to_rank(cc[i+2][0]) };
     }
     return info;
 }
