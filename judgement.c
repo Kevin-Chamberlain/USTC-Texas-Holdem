@@ -25,20 +25,20 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
     }
     Suit hand_suits[size];
     int hand_ranks[size];
-    int sum_list[15] = {0};   //画正字
+    int sum_list[15] = {0};
     for(int i = 0; i < size; i++){
         hand_suits[i] = hand[i].suit;
         hand_ranks[i] = hand[i].rank;
-        sum_list[hand_ranks[i]] += 1;
+        sum_list[hand_ranks[i]] += 1;   /*sumlist下标与牌面正对应*/
     }
 
 
     /*straight flush*/
     if (have_flush(hand_suits,size) && have_straight(hand_ranks,size)){
         result.weight = 0x00800000;
-        result.weight += highest_of_straight(hand_ranks,size);
-        int tmp = single_exist(hand_ranks, size,
-             highest_of_straight(hand_ranks,size));
+        int top = highest_of_straight(hand_ranks, size);
+        result.weight += top;
+        int tmp = single_exist(hand_ranks, size, top);
         for(int i = 0; i < 5; i++){
             result.best_hand[i] = hand[tmp + i];
         }
@@ -49,11 +49,11 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
     /*four of a kind*/
     if (find_max_value(sum_list, 15) == 4){
         result.weight = 0x00700000;
-        int four_rank, kicker;
+        int four_rank, kicker;          /*kicker::踢脚*/
         for(int i = 14; i >= 2; i--){
             if(sum_list[i] == 4){
                 four_rank = i;
-                result.weight += four_rank * 16;
+                result.weight += four_rank << 4;
                 break;
             }
         }
@@ -61,11 +61,7 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
         for (int j = 0; j < 4; j++){
             result.best_hand[j] = hand[tmp + j];
         }
-        if (tmp > 0){
-            kicker = hand_ranks[0];
-        } else {
-            kicker = hand_ranks[4];
-        }
+        kicker = tmp > 0 ? hand_ranks[0] : hand_ranks[0];
         result.weight += kicker;
         result.best_hand[4] = hand[tmp > 0 ? 0 : 4];
         result.hand_type = FOUR_OF_A_KIND;  
@@ -73,8 +69,68 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
     }
 
     /*full house*/
-//TODO:
+    if ((find_max_value(sum_list, 15) == 3) &&
+     (single_exist(sum_list, 15, 2)) != -1){
+        result.weight = 0x00600000;
+        int three_rank = single_exist(sum_list, 15, 3);
+        int kicker = single_exist(sum_list, 15, 2);
+        int kicker1 = multiple_exist(sum_list, 15, 2, 2);
+        if (kicker1 != -1){
+            kicker = kicker > kicker1 ? kicker : kicker1;
+        }
+        result.weight += (three_rank << 4) + kicker;
+        int tmp = single_exist(hand_ranks, size, three_rank);
+        for (int i = 0; i < 3; i++){
+            result.best_hand[i] = hand[tmp + i];
+        }
+        tmp = single_exist(hand_ranks, size, kicker);
+        for (int j = 0; j < 2; j++){
+            result.best_hand[j + 3] = hand[tmp + j];
+        }
+        result.hand_type = FULL_HOUSE;
+        return result;
+    }
+
+     /*flush*/
+     //TODO:
+    if (have_flush(hand_suits, size)){
+        result.weight = 0x00500000;
+        Suit key = best_of_flush(hand_suits, size);
+        int count = 0;
+        for (int i = 0; i < size; i++){
+            if (hand_suits[i] == key){
+                result.best_hand[count] = hand[i];
+//              result.weight += hand_ranks[i] * pow(16, 4 - count);
+                result.weight += hand_ranks[i] << (4 * (4 - count));
+            }
+            count++;
+            if(count == 5){
+                break;
+            }
+        }
+        result.hand_type = FLUSH;
+    }
+
+    /*straight*/
+    if (have_straight(hand_ranks, size)){
+        result.weight = 0x00400000;
+        int top = highest_of_straight(hand_ranks, size);
+        result.weight += top;
+        int tmp = single_exist(hand_ranks, size, top);
+        for(int i = 0; i < 5; i++){
+            result.best_hand[i] = hand[tmp + i];
+        }
+        result.hand_type = FLUSH;
+        return result;
+    }
+
+    /*three of a kind*/
+    if ((find_max_value(sum_list, 15) == 3)){
+        
+    }
 }
+
+
 
 
 bool have_flush(Suit suits[], int size){
@@ -93,6 +149,24 @@ bool have_flush(Suit suits[], int size){
     }
     return false;
 }
+/*未确认同花会返回默认黑桃*/
+Suit best_of_flush(Suit suits[], int size){
+    for (int i = 0; i < size-4; i++){
+        int count = 1;
+        for (int j = i+1; j < size; j++){
+            if (suit_match(suits[i], suits[j])){
+                count++;
+            }
+        }
+        if (count >= 5){
+            return suits[i];
+        } else {
+            continue;
+        }
+    }
+    return S;
+}
+
 
 bool have_straight(int ranks[], int size){
     for(int i = 0; i < size-4; i++){
@@ -146,7 +220,7 @@ int highest_of_straight(int ranks[], int size){
 }
 
 
-
+/*寻找一个，返回下标，不存在返回-1*/
 int single_exist(int ranks[], int size, int num){
     for(int i = 0; i < size; i++){
         if(ranks[i] == num){
@@ -155,7 +229,7 @@ int single_exist(int ranks[], int size, int num){
     }
     return -1;
 }
-/*寻找多条，返回最后一个下标*/
+/*寻找多条，返回最后一个下标，不足返回-1*/
 int multiple_exist(int ranks[], int size, int mul, int num){
     int count = 0;
     for(int i = 0; i < size; i++){
@@ -174,7 +248,7 @@ int multiple_exist(int ranks[], int size, int mul, int num){
 bool suit_match(Suit a, Suit b){
     return (a & b) != 0;
 }
-
+/*返回最大值*/
 int find_max_value(int arr[], int size) {
     int tmp = arr[0];
     for(int i = 1; i < size; i++) {
