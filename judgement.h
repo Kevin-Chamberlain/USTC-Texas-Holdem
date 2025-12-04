@@ -6,7 +6,6 @@
 HandResult judge(const Card o_hand[CONSIDER_SIZE]);
 bool have_flush(Suit suits[], int size);
 Suit best_of_flush(Suit suits[], int size);
-int pow_int(int base, int exp);
 bool have_straight(int ranks[], int size);
 int highest_of_straight(int ranks[], int size);
 int single_exist(int ranks[], int size, int num);

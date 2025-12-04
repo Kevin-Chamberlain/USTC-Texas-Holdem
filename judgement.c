@@ -33,7 +33,7 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
     }
 
 
-    /*straight flush*/
+    /*straight flush 8*/
     if (have_flush(hand_suits,size) && have_straight(hand_ranks,size)){
         result.weight = 0x00800000;
         int top = highest_of_straight(hand_ranks, size);
@@ -46,8 +46,8 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
         return result;
     }
 
-    /*four of a kind*/
-    if (find_max_value(sum_list, 15) == 4){
+    /*four of a kind 7*/
+    if (single_exist(sum_list, 15, 4) != -1){
         result.weight = 0x00700000;
         int four_rank, kicker;          /*kicker::踢脚*/
         for(int i = 14; i >= 2; i--){
@@ -68,15 +68,14 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
         return result;
     }
 
-    /*full house*/
-    if ((find_max_value(sum_list, 15) == 3) &&
-     (single_exist(sum_list, 15, 2)) != -1){
+    /*full house 6*/
+    if (single_exist(sum_list, 15, 3) != -1 && single_exist(sum_list, 15, 2) != -1){
         result.weight = 0x00600000;
         int three_rank = single_exist(sum_list, 15, 3);
         int kicker = single_exist(sum_list, 15, 2);
         int kicker1 = multiple_exist(sum_list, 15, 2, 2);
         if (kicker1 != -1){
-            kicker = kicker > kicker1 ? kicker : kicker1;
+            kicker = kicker1;
         }
         result.weight += (three_rank << 4) + kicker;
         int tmp = single_exist(hand_ranks, size, three_rank);
@@ -91,8 +90,7 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
         return result;
     }
 
-     /*flush*/
-     //TODO:
+     /*flush 5*/
     if (have_flush(hand_suits, size)){
         result.weight = 0x00500000;
         Suit key = best_of_flush(hand_suits, size);
@@ -111,7 +109,7 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
         result.hand_type = FLUSH;
     }
 
-    /*straight*/
+    /*straight 4*/
     if (have_straight(hand_ranks, size)){
         result.weight = 0x00400000;
         int top = highest_of_straight(hand_ranks, size);
@@ -124,9 +122,91 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
         return result;
     }
 
-    /*three of a kind*/
-    if ((find_max_value(sum_list, 15) == 3)){
-        
+    /*three of a kind 3*/
+    if (single_exist(sum_list, 15, 3) != -1){
+        result.weight = 0x00300000;
+        int three_rank = single_exist(sum_list, 15, 3);
+        int three_rank1 = multiple_exist(sum_list, 15, 2, 3);
+        if (three_rank1 != -1){
+            three_rank = three_rank1;
+        }
+        int tmp = single_exist(hand_ranks, size, three_rank);
+        int kicker = tmp > 0 ? hand_ranks[0] : hand_ranks[3];
+        int kicker1 = tmp > 1 ? hand_ranks[1] : hand_ranks[4];
+        result.weight += (kicker << 4) + kicker1;
+        for (int i = 0; i < 3; i++){
+            result.best_hand[i] = hand[tmp + i];
+        }
+        result.best_hand[3] = tmp > 0 ? hand[0] : hand[3];
+        result.best_hand[4] = tmp > 1 ? hand[1] : hand[4];
+        result.hand_type = THREE_OF_A_KIND;
+        return result;
+    }
+
+    /*two pair 2*/    
+    if ((multiple_exist(sum_list, 15, 2, 2) != -1)){
+        result.weight = 0x00200000;
+        int pair[3], loc[2], kicker;
+        pair[1] = single_exist(sum_list, 15, 2);
+        pair[0] = multiple_exist(sum_list, 15, 2, 2);
+        pair[2] = multiple_exist(sum_list, 15, 3, 2);
+        if (pair[2] != -1){
+            pair[1] = pair[0];
+            pair[0] = pair[2];
+        }
+        loc[0] = single_exist(hand_ranks, size, pair[0]);
+        loc[1] = single_exist(hand_ranks, size, pair[1]);
+        for (int i = 0; i < 2; i++){
+            result.best_hand[i] = hand[loc[0] + i];
+            result.best_hand[i + 2] = hand[loc[1] + i];
+        }
+        if (loc[0] > 0){
+            kicker = hand_ranks[0];
+            result.best_hand[4] = hand[0];
+        } else if (loc[1] > 2){
+            kicker = hand_ranks[2];
+            result.best_hand[4] = hand[2];
+        } else {
+            kicker = hand_ranks[4];
+            result.best_hand[4] = hand[4];
+        }
+        result.weight += (pair[0] << 8) + (pair[1] << 4) + kicker;
+        result.hand_type = TWO_PAIR;
+        return result;
+    }
+
+    /*one pair 1*/
+    if (single_exist(sum_list, 15, 2) != -1){
+        result.weight = 0x00100000;
+        int pair = single_exist(sum_list, 15, 2);
+        int loc = single_exist(hand_ranks, size, pair);
+        for (int i = 0; i < 2; i++){
+            result.best_hand[i] = hand[loc + i];
+        }
+        result.weight += (pair << 3 * 4);
+        int kicker[3], point = 0, count = 0;
+        while (count < 3 && point < size){
+            if (point != loc && point != loc + 1){
+                result.best_hand[2 + count] = hand[point];
+                kicker[count] = hand_ranks[point];
+                result.weight += kicker[count] << (2 - count) * 4;
+                count++;
+            }
+            point++;
+        }
+        result.hand_type = ONE_PAIR;
+        return result;
+    }
+
+    /*high card*/
+    if (true){
+        result.weight = 0x00000000;
+        for (int i = 0; i < 5; i++){
+            result.best_hand[i] = hand[i];
+            result.weight += hand_ranks[i] << (4 - i)*4;
+        }
+        result.hand_type = HIGH_CARD;
+        return result;
     }
 }
 
@@ -244,11 +324,10 @@ int multiple_exist(int ranks[], int size, int mul, int num){
 }
 
 
-
 bool suit_match(Suit a, Suit b){
     return (a & b) != 0;
 }
-/*返回最大值*/
+/*返回最大值*//*怎么没用上。。*/
 int find_max_value(int arr[], int size) {
     int tmp = arr[0];
     for(int i = 1; i < size; i++) {

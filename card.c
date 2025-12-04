@@ -26,7 +26,7 @@ static int char_to_rank(char c) {
             exit(1);  // return 0
     }
 }
-static char* handtype_to_string(HandType ht) {
+static char *handtype_to_string(HandType ht) {
     switch (ht) {
         case STRAIGHT_FLUSH: return "Straight Flush";
         case FOUR_OF_A_KIND: return "Four of a Kind";
