@@ -1,5 +1,6 @@
 #ifndef JUDGEMENT_H
 #define JUDGEMENT_H
+#include<stdbool.h>
 #include"card.h"
 #define CONSIDER_SIZE 7
 

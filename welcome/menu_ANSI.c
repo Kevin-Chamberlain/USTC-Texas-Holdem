@@ -37,9 +37,9 @@ void display_welcome(int cursor_row) {
     
     char* menu_items[] = {
         "1. 复读机",
-        "2. 激进赌徒",
-        "3. 傻瓜保守",
-        "4. 神奇AI",
+        "2. 赌徒",
+        "3. 保守",
+        "4. 算法",
         "5. 退出程序"
     };
 

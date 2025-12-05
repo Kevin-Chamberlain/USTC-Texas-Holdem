@@ -1,6 +1,5 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<stdbool.h>
 #include"card.h"
 #include"judgement.h"
 #define CONSIDER_SIZE 7
