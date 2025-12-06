@@ -4,6 +4,10 @@
 #include "var_global.h"
 #include "m_ai.h"
 #include "library.h"
+#define LIMIT_CALL 25.0        /*死的太快调高这个*/
+#define LIMIT_RAISE 70.0        /*调低：冒险*/
+#define BUDGER_LIMIT 75.0
+#define SECURITY_LIMIT 50.0
 
 Func_ptr def_ai(int i){
     switch (i){
@@ -52,17 +56,33 @@ React ai_conservative(RoundInfo info){
     return is_possible(react);
 }
 
+/*线性*/
 React ai_rational(RoundInfo info){
     React react;
     double prob = probability_to_win(info.player1);
-    if (prob <= 25) {
+    react.pp = prob;
+    if (prob <= LIMIT_CALL) {
         react.act = FOLD;
         react.amt = info.pot / 2;
+    } else if (prob >= LIMIT_RAISE){
+        double percentage = info.pot / get_chip() * 100.0;
+        if (percentage <= SECURITY_LIMIT){
+            double per = (prob - LIMIT_RAISE) / (100.0 - LIMIT_RAISE) * (BUDGER_LIMIT - per);
+            react.act = RAISE;
+            react.amt = (int)(per * get_chip());
+        } else {
+            react.act = CALL;
+            react.amt = info.pot;
+        }
+    } else {
+        react.act = CALL;
+        react.amt = info.pot;
     }
-    if (prob)
-//TODO:
     return is_possible(react);
 }
+
+
+//TODO:非线性？
 
 React is_possible(React o_react){
     React react = o_react;

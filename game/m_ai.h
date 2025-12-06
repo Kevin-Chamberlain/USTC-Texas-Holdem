@@ -1,6 +1,7 @@
 #ifndef M_AI_H
 #define M_AI_H
 #include "action.h"
+#include "card.h"
 
 typedef React (*Func_ptr)();
 Func_ptr def_ai(int i);

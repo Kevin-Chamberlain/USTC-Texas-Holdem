@@ -26,7 +26,7 @@ typedef struct {
 } Card;
 
 typedef struct {
-    Card player1[CONSIDER_SIZE];
+    Card player1[CONSIDER_SIZE];    /*ai is player1*/
     Card player2[CONSIDER_SIZE];
     int pot;
     int result;

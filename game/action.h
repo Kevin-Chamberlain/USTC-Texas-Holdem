@@ -10,6 +10,7 @@ typedef enum {
 typedef struct{
     Action act;
     int amt;
+    double pp;
 } React;
 
 #endif /* ACTION_H */
