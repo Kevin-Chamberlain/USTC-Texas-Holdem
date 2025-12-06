@@ -33,9 +33,9 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
 
 
     /*straight flush 8*/
-    if (have_flush(hand_suits,size) && have_straight(hand_ranks,size)){
+    if (have_flush(hand_suits,size) && have_straight(sum_list,15)){
         result.weight = 0x00800000;
-        int top = highest_of_straight(hand_ranks, size);
+        int top = highest_of_straight(sum_list, 15);
         result.weight += top;
         int tmp = single_exist(hand_ranks, size, top);
         for(int i = 0; i < 5; i++){
@@ -89,7 +89,7 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
         return result;
     }
 
-     /*flush 5*/
+    /*flush 5*/
     if (have_flush(hand_suits, size)){
         result.weight = 0x00500000;
         Suit key = best_of_flush(hand_suits, size);
@@ -97,27 +97,27 @@ HandResult judge(const Card o_hand[CONSIDER_SIZE]){
         for (int i = 0; i < size; i++){
             if (hand_suits[i] == key){
                 result.best_hand[count] = hand[i];
-//              result.weight += hand_ranks[i] * pow(16, 4 - count);
                 result.weight += hand_ranks[i] << (4 * (4 - count));
-            }
-            count++;
-            if(count == 5){
-                break;
+                count++;
+                if(count == 5){
+                    break;
+                }
             }
         }
         result.hand_type = FLUSH;
+        return result;
     }
 
     /*straight 4*/
-    if (have_straight(hand_ranks, size)){
+    if (have_straight(sum_list, 15)){
         result.weight = 0x00400000;
-        int top = highest_of_straight(hand_ranks, size);
+        int top = highest_of_straight(sum_list, 15);
         result.weight += top;
         int tmp = single_exist(hand_ranks, size, top);
         for(int i = 0; i < 5; i++){
             result.best_hand[i] = hand[tmp + i];
         }
-        result.hand_type = FLUSH;
+        result.hand_type = STRAIGHT;
         return result;
     }
 
@@ -216,7 +216,7 @@ bool have_flush(Suit suits[], int size){
     for (int i = 0; i < size-4; i++){
         int count = 1;
         for (int j = i+1; j < size; j++){
-            if (suit_match(suits[i], suits[j])){
+            if (suits[i] == suits[j]){
                 count++;
             }
         }
@@ -233,7 +233,7 @@ Suit best_of_flush(Suit suits[], int size){
     for (int i = 0; i < size-4; i++){
         int count = 1;
         for (int j = i+1; j < size; j++){
-            if (suit_match(suits[i], suits[j])){
+            if (suits[i] == suits[j]){
                 count++;
             }
         }
@@ -247,54 +247,28 @@ Suit best_of_flush(Suit suits[], int size){
 }
 
 
-bool have_straight(int ranks[], int size){
-    for(int i = 0; i < size-4; i++){
-        int count = 1, point = i;
-        while((point = single_exist(ranks, size, ranks[point]+1)) != -1){
-            count++;
+bool have_straight(int present[], int size){
+    for (int top = 14; top >= 6; --top) {
+        int ok = 1;
+        for (int k = 0; k < 5; ++k) {
+            if (present[top - k] == 0) { ok = 0; break; }
         }
-        point = i;
-        while((point = single_exist(ranks, size, ranks[point]-1)) != -1){
-            count++;
-        }
-
-        if (count >= 5){
-            return true;
-        } else {
-            continue;
-        }
+        if (ok) return true;
     }
-    if (   single_exist(ranks, size, 14) != -1
-        && single_exist(ranks, size, 5) != -1
-        && single_exist(ranks, size, 4) != -1
-        && single_exist(ranks, size, 3) != -1
-        && single_exist(ranks, size, 2) != -1){
-            return true;
-    }
+    /* A-5 顺子 */
+    if (present[14] && present[5] && present[4] && present[3] && present[2]) return true;
     return false;
 }
-/*弱:排序后使用*/
-int highest_of_straight(int ranks[], int size){
-    for(int i = 0; i < size-4; i++){
-        int count = 1, record = i;
-        while(ranks[i] == ranks[i+1] + 1){
-            count++;
-            i++;
+/*排序后使用*/
+int highest_of_straight(int present[], int size){
+    for (int top = 14; top >= 6; --top) {
+        int ok = 1;
+        for (int k = 0; k < 5; ++k) {
+            if (!present[top - k]) { ok = 0; break; }
         }
-        if (count >= 5){
-            return ranks[record];
-        } else {
-            i = record;
-            continue;
-        }
+        if (ok) return top;
     }
-    if (   single_exist(ranks, size, 14) != -1
-        && single_exist(ranks, size, 5) != -1
-        && single_exist(ranks, size, 4) != -1
-        && single_exist(ranks, size, 3) != -1
-        && single_exist(ranks, size, 2) != -1){
-            return 5;
-    }
+    if (present[14] && present[5] && present[4] && present[3] && present[2]) return 5;
     return -1;
 }
 
@@ -323,9 +297,7 @@ int multiple_exist(int ranks[], int size, int mul, int num){
 }
 
 
-bool suit_match(Suit a, Suit b){
-    return (a & b) != 0;
-}
+
 /*返回最大值*//*怎么没用上。。*/
 int find_max_value(int arr[], int size) {
     int tmp = arr[0];

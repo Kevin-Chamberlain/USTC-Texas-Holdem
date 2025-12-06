@@ -3,6 +3,7 @@
 #include "action.h"
 #include "card.h"
 
+char *aitype_to_string(int i);
 typedef React (*Func_ptr)();
 Func_ptr def_ai(int i);
 React ai_repeater(RoundInfo info);

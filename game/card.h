@@ -1,6 +1,7 @@
 #ifndef POKER_CARD_H
 #define POKER_CARD_H
 #define CONSIDER_SIZE 7
+#include <stdint.h>
 typedef enum {
     STRAIGHT_FLUSH = 8,
     FOUR_OF_A_KIND = 7,
@@ -28,7 +29,7 @@ typedef struct {
 typedef struct {
     Card player1[CONSIDER_SIZE];    /*ai is player1*/
     Card player2[CONSIDER_SIZE];
-    int pot;
+    long long pot;
     int result;
     int weight1;
     int weight2;

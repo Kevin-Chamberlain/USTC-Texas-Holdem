@@ -1,8 +1,4 @@
 #include "procedure.h"
-#include<stdio.h>
-//#include<stdlib.h>
-
-
 
 FILE* def_data(int n){
     switch (n){
@@ -16,7 +12,7 @@ FILE* def_data(int n){
             return fopen("round_info/games_master.csv", "r");
     
         default:
-            sprintf(stderr, "quit: bad choice");
+            fprintf(stderr, "quit: bad choice");
             return NULL;
     }
 }
@@ -24,16 +20,26 @@ FILE* def_data(int n){
 FILE* def_output(int m){
     switch (m){
         case 1:
+            cleaar_file("round_result/games_1_r.csv");
             return fopen("round_result/games_1_r.csv", "a");
         case 2:
+            cleaar_file("round_result/games_2_r.csv");
             return fopen("round_result/games_2_r.csv", "a");
         case 3:
+            cleaar_file("round_result/games_3_r.csv");
             return fopen("round_result/games_3_r.csv", "a");
         case 4:
+            cleaar_file("round_result/games_master_r.csv");
             return fopen("round_result/games_master_r.csv", "a");
     
         default:
-            sprintf(stderr, "quit: bad choice");
+            fprintf(stderr, "quit: bad choice");
             return NULL;
     }
+}
+
+void cleaar_file(const char* filename){
+    FILE *fp = fopen(filename, "w");
+    if (!fp) perror("无法打开文件");
+    fclose(fp);
 }

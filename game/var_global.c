@@ -1,27 +1,27 @@
 #include "var_global.h"
 
-int chip = 0, chip1 = 0, pot = 0;
+long long chip = 0, chip1 = 0, pot = 0;
 
-void set_chip(int value){
+void set_chip(long long value){
     chip = value;
 }
 
-int get_chip(void){
+long long get_chip(void){
     return chip;
 }
 
-void set_chip1(int value){
+void set_chip1(long long value){
     chip1 = value;
 }
 
-int get_chip1(void){
+long long get_chip1(void){
     return chip1;
 }
 
-void set_pot(int value){
+void set_pot(long long value){
     pot = value;
 }
 
-int get_chip1(void){
+long long get_pot(void){
     return pot;
 }

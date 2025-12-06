@@ -5,9 +5,20 @@
 #include "m_ai.h"
 #include "library.h"
 #define LIMIT_CALL 25.0        /*死的太快调高这个*/
-#define LIMIT_RAISE 70.0        /*调低：冒险*/
-#define BUDGER_LIMIT 75.0
+#define LIMIT_RAISE 80.0        /*调低：冒险*/
+#define BUDGER_LIMIT 60.0
 #define SECURITY_LIMIT 50.0
+
+char *aitype_to_string(int i) {
+    switch (i) {
+        case 1: return "Repeater";
+        case 2: return "Gambler";
+        case 3: return "Conservative";
+        case 4: return "Rational";
+
+        default: return "Unknown Type";
+    }
+}
 
 Func_ptr def_ai(int i){
     switch (i){
@@ -21,7 +32,7 @@ Func_ptr def_ai(int i){
             return ai_rational;
     
         default:
-            sprintf(stderr, "quit: bad choice");
+            fprintf(stderr, "quit: bad choice");
             return NULL;
     }
 }
@@ -30,6 +41,7 @@ React ai_repeater(RoundInfo info){
     React react;
     react.act = CALL;
     react.amt = info.pot;
+    react.pp = -1;
     return is_possible(react);
 }
 
@@ -39,6 +51,7 @@ React ai_gambler(RoundInfo info){
     int r = (int)result.hand_type;
     react.act = RAISE;
     react.amt = info.pot + r * 100 + 1;
+    react.pp = -1;    
     return is_possible(react);
 }
 
@@ -53,6 +66,7 @@ React ai_conservative(RoundInfo info){
         react.act = FOLD;
         react.amt = info.pot / 2;
     }
+    react.pp = -1;
     return is_possible(react);
 }
 
@@ -67,9 +81,14 @@ React ai_rational(RoundInfo info){
     } else if (prob >= LIMIT_RAISE){
         double percentage = info.pot / get_chip() * 100.0;
         if (percentage <= SECURITY_LIMIT){
-            double per = (prob - LIMIT_RAISE) / (100.0 - LIMIT_RAISE) * (BUDGER_LIMIT - per);
+            double scale = (prob - LIMIT_RAISE) / (100.0 - LIMIT_RAISE);
+            if (scale < 0) scale = 0;
+            if (scale > 1) scale = 1;
+            double max_frac = (double)BUDGER_LIMIT / 100.0;
+            double per = scale * max_frac;
+            
             react.act = RAISE;
-            react.amt = (int)(per * get_chip());
+            react.amt = (long long)(per * (double)get_chip());
         } else {
             react.act = CALL;
             react.amt = info.pot;
