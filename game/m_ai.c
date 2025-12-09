@@ -4,10 +4,12 @@
 #include "var_global.h"
 #include "m_ai.h"
 #include "library.h"
-#define LIMIT_CALL 25.0        /*死的太快调高这个*/
-#define LIMIT_RAISE 80.0        /*调低：冒险*/
-#define BUDGER_LIMIT 60.0
-#define SECURITY_LIMIT 50.0
+#define LIMIT_CALL 35.0        /*行为分界：保守调高*/
+#define LOWER_LIMIT_CALL 15.0  /*一线生机*/
+#define LIMIT_RAISE 78.0       /*行为分界：保守调高*/
+#define BUDGER_LIMIT 60.0      /*加注上限百分比*/
+#define SECURITY_LIMIT 50.0    /*池底-筹码安全感百分比*/
+#define EVERAGE_POT 255.0      /*计算得到：平均池底大小*/
 
 char *aitype_to_string(int i) {
     switch (i) {
@@ -57,6 +59,8 @@ React ai_gambler(RoundInfo info){
 
 React ai_conservative(RoundInfo info){
     React react;
+    double prob = probability_to_win(info.player1);
+    react.pp = prob;
     HandResult result = judge(info.player1);
     int r = (int)result.hand_type;
     if (r >= 1){
@@ -73,11 +77,19 @@ React ai_conservative(RoundInfo info){
 /*线性*/
 React ai_rational(RoundInfo info){
     React react;
+    if (info.count <= 7){
+        return ai_conservative(info);
+    }
     double prob = probability_to_win(info.player1);
     react.pp = prob;
     if (prob <= LIMIT_CALL) {
-        react.act = FOLD;
-        react.amt = info.pot / 2;
+        if (get_chip() - info.pot / 2 <= EVERAGE_POT && prob >= LOWER_LIMIT_CALL){
+            react.act = CALL;
+            react.amt = info.pot;       /*背水一战*/
+        } else {
+            react.act = FOLD;
+            react.amt = info.pot / 2;
+        }
     } else if (prob >= LIMIT_RAISE){
         double percentage = info.pot / get_chip() * 100.0;
         if (percentage <= SECURITY_LIMIT){
@@ -88,7 +100,7 @@ React ai_rational(RoundInfo info){
             double per = scale * max_frac;
             
             react.act = RAISE;
-            react.amt = (long long)(per * (double)get_chip());
+            react.amt = (long long)(per * (double)(get_chip() - info.pot)) + info.pot;
         } else {
             react.act = CALL;
             react.amt = info.pot;
@@ -100,8 +112,7 @@ React ai_rational(RoundInfo info){
     return is_possible(react);
 }
 
-
-//TODO:非线性？
+//TODO:其他算法
 
 React is_possible(React o_react){
     React react = o_react;

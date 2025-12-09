@@ -58,10 +58,11 @@ int main() {
         while (linelen > 0 && (line[linelen-1] == '\n' || line[linelen-1] == '\r')) line[--linelen] = '\0';
         /* leading spaces / empty lines */
         char *p = line;
-        while (*p == ' ' || *p == '\t') ++p;
-        if (*p == '\0') continue;
+//        while (*p == ' ' || *p == '\t') ++p;
+//        if (*p == '\0') continue;
 
         RoundInfo info = read_round_info(p);
+        info.count = ++count;
         set_pot(info.pot);
         React react = ai_pointer(info);
         long long chip_change = -(long long)react.amt;
@@ -74,13 +75,12 @@ int main() {
             set_pot(0);
         } 
 
-        count++;
 /*      检查judge是否正确
         int rrr = ai_handresult.weight > human_handresult.weight ? 1 : 0;
         if (rrr != info.result) printf("%d,%x,%x\t",count,ai_handresult.weight , human_handresult.weight);
 */
         if (react.pp >= 0.0)
-            fprintf(OUTPUT, "%d,%.5lf,%s,%+lld,%lld\n",
+            fprintf(OUTPUT, "%d,%.3lf,%s,%+lld,%lld\n",
                  count, react.pp, action_to_string(react.act), (long long)chip_change, (long long)get_chip());
         else 
             fprintf(OUTPUT, "%d,%s,%+lld,%lld\n",

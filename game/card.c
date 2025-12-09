@@ -64,7 +64,7 @@ RoundInfo read_round_info(const char* line){
         &info.result
     );
     if (check != 11) {
-        fprintf(stderr, "Bad CSV line: expected 11 fields but got %d -- line='%.80s'\n", check, start);
+        fprintf(stderr, "\nBad CSV line: expected 11 fields but got %d -- line='%.80s'\n", check, start);
         exit(1);
     }
     /* ensure tokens are 2 chars (rank + suit) */

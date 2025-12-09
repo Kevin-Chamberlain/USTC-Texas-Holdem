@@ -21,16 +21,16 @@ FILE* def_output(int m){
     switch (m){
         case 1:
             cleaar_file("round_result/games_1_r.csv");
-            return fopen("round_result/games_1_r.csv", "a");
+            return fopen("round_result/games_1_r.csv", "a+");
         case 2:
             cleaar_file("round_result/games_2_r.csv");
-            return fopen("round_result/games_2_r.csv", "a");
+            return fopen("round_result/games_2_r.csv", "a+");
         case 3:
             cleaar_file("round_result/games_3_r.csv");
-            return fopen("round_result/games_3_r.csv", "a");
+            return fopen("round_result/games_3_r.csv", "a+");
         case 4:
             cleaar_file("round_result/games_master_r.csv");
-            return fopen("round_result/games_master_r.csv", "a");
+            return fopen("round_result/games_master_r.csv", "a+");
     
         default:
             fprintf(stderr, "quit: bad choice");

@@ -1,4 +1,6 @@
 /build
+/round_result
 test
 test.*
+*.exe
 *.o

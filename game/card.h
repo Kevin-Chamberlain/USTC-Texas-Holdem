@@ -33,6 +33,7 @@ typedef struct {
     int result;
     int weight1;
     int weight2;
+    int count;
 } RoundInfo;
 
 typedef struct {
